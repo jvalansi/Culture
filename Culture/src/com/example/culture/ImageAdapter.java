@@ -39,16 +39,21 @@ public class ImageAdapter extends BaseAdapter {
         ImageView imageView;
         if (convertView == null) {  // if it's not recycled, initialize some attributes
             imageView = new ImageView(mContext);
-            imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
+            imageView.setLayoutParams(new GridView.LayoutParams(85, 75));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setPadding(8, 8, 8, 8);
         } else {
             imageView = (ImageView) convertView;
         }
 
-        imageView.setBackgroundColor(Color.BLACK);
-        imageView.setImageResource(mThumbIds[mBoard.getTile(position)]);
-        return imageView;
+        imageView.setBackgroundColor(Color.GREEN);
+        Unit unit = mBoard.getTile(position).getUnit();
+		if(unit != null){
+        	imageView.setImageResource(mThumbIds[unit.getId()]);
+        } else {
+        	imageView.setImageDrawable(null);
+        }
+		return imageView;
     }
 
     // references to our images

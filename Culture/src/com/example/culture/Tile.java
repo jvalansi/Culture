@@ -1,21 +1,39 @@
 package com.example.culture;
 
+
 public class Tile {
 
-	private int symbol;
+	private int x;
+	private int y;
+	public enum Type {LAND, SEA};
+	private Unit unit;
+	private Type type;
 	
 	
-	public Tile() {
-		this.symbol = 2;
+	public Tile(int x,int y) {
+		this.x = x;
+		this.y = y;
+		this.type = Type.LAND;
+		this.unit = null;
 	}
 	
-	public void set(int id) {
-		// TODO Auto-generated method stub
-		this.symbol = id;
+	public void setUnit(Unit unit) {
+		this.unit = unit;
+		if(unit != null){
+			this.unit.setTile(this);
+		}
 	}
 
-	public int get() {
-		return this.symbol;
+	public Unit getUnit() {
+		return this.unit;
+	}
+
+	public int x() {
+		return x;
+	}
+	
+	public int y() {
+		return y;
 	}
 	
 }

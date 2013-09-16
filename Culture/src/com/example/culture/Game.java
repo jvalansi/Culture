@@ -2,15 +2,17 @@ package com.example.culture;
 
 import java.util.Random;
 
+
 /**
  * 
  * @author jordan
  *
- *	Tic Tac Toe Game
+ *	Culture Game
  *	Board game
  *	turn based
- *	on each turn player selects empty tile to place a unit
- *	game ends when a whole line is covered by player's units, or when board is full
+ *	initial setup: each player starts with a unit in a random location
+ *	on each turn player can move his units, or use them to attack enemy units
+ *	game ends when player looses all of his units
  */
 public class Game {
 	
@@ -23,10 +25,13 @@ public class Game {
 	
 	public Game(Board board) {
 		this.players = new Player[2];
-		this.players[0] = new Player(true);
-		this.players[1] = new Player(false);
+		this.players[0] = new Player(true, 0);
+		this.players[1] = new Player(false, 1);
 		this.currentPlayerID = 0;
 		this.board = board;
+		Random r = new Random();
+		this.board.placeUnit(r.nextInt(board.size()), players[0].getUnit(0));
+		this.board.placeUnit(r.nextInt(board.size()), players[1].getUnit(0));
 		this.turn = 0;
 		this.maxTurn = 9;
 		this.selection = 0;
@@ -39,7 +44,7 @@ public class Game {
 	public int getCurremtPlayerID() {
 		return currentPlayerID;
 	}
-	
+		
 	public void gamePlay() {
 		if(!gameOver()){
 			switchPlayer();			
@@ -51,37 +56,68 @@ public class Game {
 		this.currentPlayerID = (this.currentPlayerID + 1)%this.players.length;  
 	}
 
+	//
 	public void playTurn() {
-		if(!players[currentPlayerID].isHuman()){
+		Player currentPlayer = players[currentPlayerID];
+		Unit unit = currentPlayer.getUnit(0);
+		if(!currentPlayer.isHuman()){
 			Random r = new Random();
 			selection = r.nextInt(board.size());
 		}
-		
-		board.setTile(selection, currentPlayerID);
+		if(validAction(selection, unit)){
+			performAction(selection, unit);
+		}
+
 		turn++;
+	}
+
+	public void attackUnit(int place, Unit unit) {
+		Unit targetUnit = board.getTile(place).getUnit();
+		targetUnit.fight(unit);
+		if(targetUnit.getHealth() == 0){
+			board.removeUnit(targetUnit);
+		}
+	}
+
+	public void performAction(int selection, Unit unit) {
+		if(isAttack(selection, unit)){
+			attackUnit(selection, unit);
+		} else {
+			board.moveUnit(selection, unit);
+		}
+		
+	}
+	
+	private boolean validAction(int selection, Unit unit) {
+		if(isAttack(selection, unit)){
+			return validAttack(selection, unit);
+		} else {
+			return validMove(selection, unit);
+		}
+	}
+
+	private boolean isAttack(int selection2, Unit unit) {
+		Unit targetUnit = board.getTile(selection).getUnit();
+		return (targetUnit != null && targetUnit.getId() != currentPlayerID);
+	}
+
+	private boolean validAttack(int selection2, Unit unit) {
+		return board.distance(selection, unit) <= unit.getRange();			
+	}
+
+	public boolean validMove(int selection, Unit unit) {
+		boolean valid = true;
+		valid &= board.distance(selection, unit) <= unit.getMovement();			
+		return valid;
 	}
 
 	public boolean gameOver() {
 		boolean gameover = false;
 		gameover |= (turn == maxTurn);
-		for (int i = 0; i < board.getWidth(); i++) {
-			gameover |= win(board.getColumn(i));
-		}
-		for (int i = 0; i < board.getLength(); i++) {
-			gameover |= win(board.getRow(i));
-		}
-		gameover |= win(board.getDiagonal(false));
-		gameover |= win(board.getDiagonal(true));
+		// TODO
 		return gameover;
 	}
 	
-	private boolean win(Tile [] tiles) {
-		boolean win = true;
-		for (int i = 0; i < tiles.length; i++) {
-			win &= (tiles[i].get() == currentPlayerID);
-		}
-		return win;
-	}
 
 	public static void main(String[] args) {
 		Board b = new Board();

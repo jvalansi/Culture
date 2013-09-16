@@ -1,5 +1,6 @@
 package com.example.culture;
 
+
 public class Board {
 	
 	private Tile [][] b;
@@ -7,12 +8,12 @@ public class Board {
 	private int length;
 	
 	public Board() {
-		this.width = 3;
-		this.length = 3;
+		this.width = 8;
+		this.length = 8;
 		this.b = new Tile[this.width][this.length];
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < length; j++) {
-				b[i][j] = new Tile();
+				b[i][j] = new Tile(i,j);
 			}
 		}
 	}
@@ -25,43 +26,35 @@ public class Board {
 		return this.width;
 	}
 	
-	public void setTile(int selection, int id) {
-		b[selection/this.width][selection%this.length].set(id); 
-		
-	}
-
-	public int getTile(int position) {
-		return b[position/this.width][position%this.length].get();
-	}
-
 	public int getLength() {
-		// TODO Auto-generated method stub
 		return this.length;
 	}
 
-	public Tile [] getRow(int i) {
-		return b[i];
+	public Tile getTile(int place) {
+		return this.b[place%width][place/width];
 	}
-	public Tile [] getColumn(int i) {
-		Tile [] tiles = new Tile[length];
-		for (int j = 0; j < length; j++) {
-			tiles[j] = b[j][i];
+	
+	public int distance(int selection, Unit unit) {
+		if(unit.getTile() == null){
+			return Integer.MAX_VALUE;
 		}
-		return tiles;
+		int x_distance = Math.abs(selection%width - unit.getTile().x());
+		int y_distance = Math.abs(selection/width - unit.getTile().y());
+		return Math.max(x_distance, y_distance);
 	}
 
-	public Tile [] getDiagonal(boolean backwards) {
-		Tile [] tiles = new Tile[length];
-		if(backwards){
-			for (int i = 0; i < length; i++) {
-				tiles[i] = b[width-i-1][i];
-			}
-		} else {
-			for (int i = 0; i < length; i++) {
-				tiles[i] = b[i][i];
-			}			
-		}
-		return tiles;
+	public void placeUnit(int place, Unit unit) {
+		this.b[place%width][place/width].setUnit(unit);
 	}
+
+	public void moveUnit(int place, Unit unit) {
+		unit.setTile(null);
+		this.b[place%width][place/width].setUnit(unit);
+	}
+
+	public void removeUnit(Unit unit) {
+		unit.setTile(null);
+	}
+
 
 }
