@@ -34,7 +34,7 @@ public class Unit {
 	
 	public Unit(int id) {
 		this.id = id;
-		type = Type.LAND;
+		setType(Type.LAND);
 		attack = defence = movement = sight = health = range = 1;
 		tile = null;
 	}
@@ -68,5 +68,13 @@ public class Unit {
 
 	public int getHealth() {
 		return health;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
 	}
 }

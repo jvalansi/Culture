@@ -8,8 +8,8 @@ public class Board {
 	private int length;
 	
 	public Board() {
-		this.width = 8;
-		this.length = 8;
+		this.width = 12;
+		this.length = 12;
 		this.b = new Tile[this.width][this.length];
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < length; j++) {
@@ -54,6 +54,10 @@ public class Board {
 
 	public void removeUnit(Unit unit) {
 		unit.setTile(null);
+	}
+
+	public void placeCity(int i, City city) {
+		getTile(i).setCity(city);
 	}
 
 

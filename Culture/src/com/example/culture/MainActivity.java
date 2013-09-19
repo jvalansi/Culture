@@ -4,12 +4,15 @@ import com.example.culture.ImageAdapter;
 import com.example.culture.MainActivity;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.graphics.Color;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.Toast;
@@ -38,9 +41,25 @@ public class MainActivity extends Activity {
 	    gridview.setOnItemClickListener(new OnItemClickListener() {
 	    	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 	    		game.setSelection(position);
-	    		v.setBackgroundColor(Color.YELLOW);
 	    	}
 	    });
+	    
+	    gridview.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
+				if(board.getTile(position).getCity()!= null){
+		    		CityDialog tileview =new CityDialog();
+					Bundle bundle = new Bundle();
+					bundle.putInt("position", position);
+		    		tileview.setArguments(bundle);
+		    		tileview.show(getFragmentManager(), "city");
+					return true;
+				} else {
+					return false;
+				}
+			}
+		});
 	    
 	    button.setOnClickListener(new OnClickListener() {
 			
@@ -64,6 +83,10 @@ public class MainActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	public Board getBoard() {
+		return board;
 	}
 
 }
