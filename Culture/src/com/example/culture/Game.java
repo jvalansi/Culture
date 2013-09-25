@@ -1,8 +1,11 @@
 package com.example.culture;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 import android.R.bool;
+import android.graphics.YuvImage;
 
 
 /**
@@ -32,10 +35,15 @@ public class Game {
 		this.currentPlayerID = 0;
 		this.board = board;
 		Random r = new Random();
-		int ri = r.nextInt(board.size());
+		int ri;
+		do{
+			ri = r.nextInt(board.size());
+		} while(board.getTile(ri).getType() != Tile.Type.LAND);
 		this.board.placeUnit(ri, players[0].getUnit(0));
 		this.board.placeCity(ri, players[0].getCity(0));
-		ri = r.nextInt(board.size());
+		do{
+			ri = r.nextInt(board.size());
+		} while(board.getTile(ri).getType() != Tile.Type.LAND);
 		this.board.placeUnit(ri, players[1].getUnit(0));
 		this.board.placeCity(ri, players[1].getCity(0));
 		this.turn = 0;
@@ -68,61 +76,79 @@ public class Game {
 
 	public void playTurn() {
 		Player currentPlayer = players[currentPlayerID];
+		if(currentPlayer.armySize()==0){
+			return;
+		}
 		Unit unit = currentPlayer.getUnit(0);
 		if(!currentPlayer.isHuman()){
 			Random r = new Random();
-			selection = r.nextInt(board.size());
+			ArrayList<Integer> unitActions = getValidActions(unit, this.board);
+			int bestScore = 0;
+			for (Iterator action = unitActions.iterator(); action.hasNext();) {
+				Integer target = (Integer) action.next();
+				Board newBoard = new Board(this.board);
+				Tile t = unit.getTile(); 
+				Unit newUnit = newBoard.getTile(t.x(),t.y()).getUnit();
+				performAction(target, newUnit, newBoard);
+				int score = getScore(currentPlayerID, newBoard);
+				if(score > bestScore ) {
+					bestScore = score;
+					selection = target;
+				}
+			}
+			selection = unitActions.get(r.nextInt(unitActions.size()));
 		}
-		if(validAction(selection, unit)){
-			performAction(selection, unit);
+		if(validAction(selection, unit, this.board)){
+			performAction(selection, unit, this.board);
 		}
 
 		turn++;
 	}
 
-	public void attackUnit(int place, Unit unit) {
+	public void performAction(int selection, Unit unit, Board board) {
+		if(isAttack(selection, unit, board)){
+			attackUnit(selection, unit, board);
+		} else {
+			moveUnit(selection, unit, board);
+		}	
+	}
+	
+	private void attackUnit(int place, Unit unit, Board board) {
 		Unit targetUnit = board.getTile(place).getUnit();
 		targetUnit.fight(unit);
 		if(targetUnit.getHealth() == 0){
 			board.removeUnit(targetUnit);
+			players[targetUnit.getId()].removeUnit(targetUnit);
 		}
 	}
 
-	private void moveUnit(int selection, Unit unit) {
+	private void moveUnit(int selection, Unit unit, Board board) {
 		board.moveUnit(selection, unit);
 		City city = board.getTile(selection).getCity();
 		if(city != null){
-			city.setId(currentPlayerID);
+			players[city.getId()].removeCity(city);
+			players[currentPlayerID].addCity(city);
 		}
 	}
 
-
-	public void performAction(int selection, Unit unit) {
-		if(isAttack(selection, unit)){
-			attackUnit(selection, unit);
+	private boolean validAction(int selection, Unit unit, Board board) {
+		if(isAttack(selection, unit, board)){
+			return validAttack(selection, unit, board);
 		} else {
-			moveUnit(selection, unit);
-		}	
-	}
-	
-	private boolean validAction(int selection, Unit unit) {
-		if(isAttack(selection, unit)){
-			return validAttack(selection, unit);
-		} else {
-			return validMove(selection, unit);
+			return validMove(selection, unit, board);
 		}
 	}
 
-	private boolean isAttack(int selection, Unit unit) {
+	private boolean isAttack(int selection, Unit unit, Board board) {
 		Unit targetUnit = board.getTile(selection).getUnit();
 		return (targetUnit != null && targetUnit.getId() != currentPlayerID);
 	}
 
-	private boolean validAttack(int selection, Unit unit) {
+	private boolean validAttack(int selection, Unit unit, Board board) {
 		return board.distance(selection, unit) <= unit.getRange();			
 	}
 
-	public boolean validMove(int selection, Unit unit) {
+	private boolean validMove(int selection, Unit unit, Board board) {
 		boolean valid = true;
 		valid &= board.distance(selection, unit) <= unit.getMovement();
 		valid &= unit.getType().ordinal() == board.getTile(selection).getType().ordinal();
@@ -131,23 +157,47 @@ public class Game {
 
 	public boolean gameOver() {
 		boolean gameover = false;
-		gameover |= isLastOneStanding();
-		// TODO
+		gameover |= isLastOneStanding(this.board);
 		return gameover;
 	}
 
-	private boolean isLastOneStanding() {
+	private boolean isLastOneStanding(Board board) {
 		boolean win = true;
-		for (int i = 0; i < board.size(); i++) {
-			City city = board.getTile(i).getCity();
-			Unit unit = board.getTile(i).getUnit();
-			boolean noEnemyUnit = city == null || city.getId() != currentPlayerID; 
-			boolean noEnemyCity = unit == null || unit.getId() != currentPlayerID;
-			boolean noEnemy = noEnemyUnit & noEnemyCity;
-			win &= noEnemy;
+		for (int i = 0; i < players.length; i++) {
+			if(i==currentPlayerID){
+				continue;
+			}
+			win &= getScore(i, board) == 0;;
 		}
 		return win;
 	}
 
+	private ArrayList<Integer> getValidActions(Unit unit, Board board){
+		ArrayList<Integer> validActions = new ArrayList<Integer>(); 
+		for (int i = 0; i < board.size(); i++) {
+			if(validAction(i, unit, board)){
+				validActions.add(i);
+			}
+		}
+		return validActions;
+	}
+	
+	public int getScore(int id, Board board) {
+		int score =0;
+		for (int i = 0; i < board.size(); i++) {
+			Tile tile = board.getTile(i);
+			Unit unit = tile.getUnit();
+			if(unit != null && unit.getId() == id){
+				score ++;
+			}
+			City city = tile.getCity();
+			if(city != null && city.getId() == id){
+				score++;
+			}
+		}
+		return score;
+	}
+
+	
 	
 }

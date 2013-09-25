@@ -33,12 +33,26 @@ public class Player {
 		return this.army.get(i);
 	}
 
+	public void removeUnit(Unit u) {
+		this.army.remove(u);
+	}
+	
 	public int citiesSize(){
 		return cities.size();
 	}	
 	
+	public void addCity(City c) {
+		c.setId(id);
+		this.cities.add(c);
+	}
+	
 	public City getCity(int i) {
 		return cities.get(i);
 	}
+
+	public void removeCity(City c) {
+		this.cities.remove(c);
+	}
+	
 
 }

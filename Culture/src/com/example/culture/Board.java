@@ -18,6 +18,17 @@ public class Board {
 		}
 	}
 
+	public Board(Board board) {
+		this.width = board.width;
+		this.length = board.length;
+		this.b = new Tile[this.width][this.length];
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < length; j++) {
+				b[i][j] = new Tile(board.getTile(i,j));
+			}
+		}
+	}
+
 	public int size() {
 		return this.length*this.width;
 	}
@@ -34,6 +45,10 @@ public class Board {
 		return this.b[place%width][place/width];
 	}
 	
+	public Tile getTile(int i, int j) {
+		return this.b[i][j];
+	}
+
 	public int distance(int selection, Unit unit) {
 		if(unit.getTile() == null){
 			return Integer.MAX_VALUE;

@@ -39,6 +39,10 @@ public class Unit {
 		tile = null;
 	}
 	
+	public Unit(Unit unit) {
+		this(unit.id);
+	}
+
 	public int getId() {
 		return id;
 	}

@@ -22,15 +22,18 @@ public class Tile {
 		this.city = null;
 	}
 	
-	public void setUnit(Unit unit) {
-		this.unit = unit;
-		if(unit != null){
-			this.unit.setTile(this);
+	public Tile(Tile tile) {
+		this.x = tile.x;
+		this.y = tile.y;
+		this.setType(tile.getType());
+		Unit u = tile.unit;
+		if(u != null){
+			this.setUnit(new Unit(u));
 		}
-	}
-
-	public Unit getUnit() {
-		return this.unit;
+		City c = tile.city;
+		if(c!=null){
+			this.setCity(new City(c));
+		}
 	}
 
 	public int x() {
@@ -47,6 +50,17 @@ public class Tile {
 
 	public void setType(Type type) {
 		this.type = type;
+	}
+
+	public void setUnit(Unit unit) {
+		this.unit = unit;
+		if(unit != null){
+			this.unit.setTile(this);
+		}
+	}
+
+	public Unit getUnit() {
+		return this.unit;
 	}
 
 	public void setCity(City city) {

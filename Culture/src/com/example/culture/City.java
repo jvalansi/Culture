@@ -10,6 +10,10 @@ public class City {
 		this.population = 1;
 	}
 
+	public City(City city) {
+		this(city.id);
+	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
